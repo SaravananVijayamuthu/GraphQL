@@ -5,8 +5,10 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const multer = require('multer');
 
-const feedRoutes = require('./routes/feed');
-const authRoutes = require('./routes/auth');
+const { graphqlHTTP } = require('express-graphql');
+
+const graphqlSchema = require('./graphql/schema');
+const graphqlResolver = require('./graphql/resolver');
 
 const app = express();
 
@@ -51,8 +53,11 @@ app.use((req, res, next) => {
     next();
 });
 
-app.use('/feed', feedRoutes);
-app.use('/auth', authRoutes);
+app.use('/graphql', graphqlHTTP({
+    schema: graphqlSchema,
+    rootValue: graphqlResolver
+})
+);
 
 app.use((error, req, res, next) => {
     console.log(error);
@@ -67,13 +72,10 @@ app.use((error, req, res, next) => {
 
 mongoose
     .connect(
-        'mongodb+srv://maximilian:9u4biljMQc4jjqbe@cluster0-ntrwp.mongodb.net/messages?retryWrites=true'
+        'mongodb+srv://sarvi:admin@crash.m0fwi.mongodb.net/socialhub',{useNewUrlParser: true,  useUnifiedTopology: true }
     )
     .then(result => {
-        const server = app.listen(8080);
-        const io = require('./socket').init(server);
-        io.on('connection', socket => {
-            console.log('Client connected');
-        });
+        app.listen(3030);
+        console.log('hi');
     })
     .catch(err => console.log(err));
